@@ -127,16 +127,37 @@ function reloadTotal(){
     `
 }
 
-//Dans le cas a=où l'on supprime un article :
-function deleteProduct(){
-    let delitems = document.getElementsByClassName("deleteItem");
-    for (let i=0; i < delitems.length; i++){ //on boucle sur tous les <p> "supprimer" de la classe deleteItem
-        delitems[i].addEventListener("click", function(event){ //on ajoute un eventListener au momemnt du clic sur le <p> supprimer
+function modifQuantity(){
+    let quantityModif = document.querySelectorAll(".itemQuantity");
+
+    //on boucle sur les input itemQuantity et on crée une fonction qui écoute le changement en ajoutant un eventlistener "change" suite à une modification des quantités :
+    //i = index et quantityModif = tableau
+    for (let i=0; i < quantityModif.length; i++){
+        quantityModif[i].addEventListener("change", function(event){
 
             //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au moment de la modification
             event.preventDefault();
 
-            //on crée un nouveau tableau 
+            //on select l'élément que l'on modifie :
+            productInLocalStorage[i].quantity = parseInt(quantityModif[i].value);
+
+            localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+            reloadTotal();
+        })
+    }
+}
+
+
+//Dans le cas a=où l'on supprime un article :
+function deleteProduct(){
+    let delitems = document.getElementsByClassName("deleteItem");
+    for (let i=0; i < delitems.length; i++){ //on boucle sur tous les <p> "supprimer" de la classe deleteItem
+        delitems[i].addEventListener("click", function(event){ //on ajoute un eventListener au moment du clic sur le <p> supprimer
+
+            //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au moment de la modification
+            event.preventDefault();
+
+            //on crée un nouveau tableau
             let newLocalStorage = [];
             //on boucle sur l'index "j" des prdts dans le localStorage
             for(let j in productInLocalStorage){
@@ -158,22 +179,108 @@ function deleteProduct(){
     }
 }
 
-function modifQuantity(){
-    let quantityModif = document.querySelectorAll(".itemQuantity");
+//Validation du formulaire avec utilisation des Regex:
+let orderButton = document.getElementById("order");
 
-    //on boucle sur les input itemQuantity et on crée une fonction qui écoute le changement en ajoutant un eventlistener "change" suite à une modification des quantités :
-    //i = index et quantityModif = tableau
-    for (let i=0; i < quantityModif.length; i++){
-        quantityModif[i].addEventListener("change", function(event){
+orderButton.addEventListener("click", function(event){
 
-            //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au moment de la modification
-            event.preventDefault();
-
-            //on select l'élément que l'on modifie :
-            productInLocalStorage[i].quantity = parseInt(quantityModif[i].value);
-
-            localStorage.setItem("product", JSON.stringify(productInLocalStorage));
-            reloadTotal();
-        })
+    event.preventDefault();
+    const contact = {
+        firstName : document.getElementById('firstName').value,
+        lastName : document.getElementById('lastName').value,
+        address : document.getElementById('address').value,
+        city : document.getElementById('city').value,
+        email : document.getElementById('email').value 
     }
+
+    let flagVerif = true;
+
+    if(! contact.firstName.match(/^([a-zA-Z éèàçùêâûôëï-]+)$/)){
+        let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
+        firstNameErrorMsg.innerText = "Le prénom est invalide, vérifiez votre saisi : pas de chiffre(s)";
+        flagVerif = false;
+    } else{
+        //le champs saisi est correct donc on ne met pas de message d'erreur
+        let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
+        firstNameErrorMsg.innerText = "";
+    }
+
+    if(! contact.lastName.match(/^([a-zA-Z éèàçùêâûôëï-]+)$/)){
+        let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
+        lastNameErrorMsg.innerText = "Le nom est invalide, vérifiez votre saisi : pas de chiffre(s) !";
+        flagVerif = false;
+    } else{
+        //le champs saisi est correct donc on ne met pas de message d'erreur
+        let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
+        lastNameErrorMsg.innerText = "";
+    }
+
+    if(! contact.address.match(/^([0-9]{1,5}[a-z A-Z0-9_.,éèàçùêâûôëï]+)$/)){
+        let addressErrorMsg = document.getElementById('addressErrorMsg');
+        addressErrorMsg.innerText = "L\'adresse est invalide";
+        flagVerif = false;
+    } else{
+        //le champs saisi est correct donc on ne met pas de message d'erreur
+        let addressErrorMsg = document.getElementById('addressErrorMsg');
+        addressErrorMsg.innerText = "";
+    }
+
+    if(! contact.city.match(/^([0-9]{1,5}[a-z A-Z_.,éèàçùêâûôëï-]{1,60})$/)){
+        let cityErrorMsg = document.getElementById('cityErrorMsg');
+        cityErrorMsg.innerText = "La ville n\'est pas valide, pensez à inscrire le code postal";
+        flagVerif = false;
+    } else{
+        //le champs saisi est correct donc on ne met pas de message d'erreur
+        let cityErrorMsg = document.getElementById('cityErrorMsg');
+        cityErrorMsg.innerText = "";
+    }
+
+    if(! contact.email.match(/^[a-zA-Z0-9-_.]+[@]{1}[a-zA-Z]+[.]{1}[a-z]{2,3}$/)){
+        let emailErrorMsg = document.getElementById('emailErrorMsg');
+        emailErrorMsg.innerText = "Vérifiez que votre adresse email est écrite convenablement";
+        flagVerif = false;
+    } else{
+        //le champs saisi est correct donc on ne met pas de message d'erreur
+        let emailErrorMsg = document.getElementById('emailErrorMsg');
+        emailErrorMsg.innerText = "";
+    }
+
+
+    if(flagVerif){
+        // on ajoute les infos manquantes du panier
+        products = createPostProduct()
+        const sendFormData = {
+            contact,
+            products,
+        }
+
+        const options = {
+            method: 'POST',
+            body: JSON.stringify(sendFormData),
+            headers: { 
+              'Content-Type': 'application/json',
+            }
+        };
+
+        fetch("http://localhost:3000/api/products/order", options)
+        .then(function (res) {
+            return res.json()
+        })
+
+        .then(function(data){
+            document.location.href = 'confirmation.html?id='+ data.orderId;
+        });
+
+    }
+});
+
+// cette fonction permet de mettre au format attendu les différents produits pour l'envoyer a l'API (POST)
+function createPostProduct(){
+    data=[]
+    for(product of productInLocalStorage){
+        // on récupère que l'ID car l'API attend uniquement une liste de string des ID produits
+        data.push(product.id)
+    }
+    return data
 }
+
