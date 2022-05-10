@@ -138,17 +138,25 @@ function modifQuantity(){
             //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au moment de la modification
             event.preventDefault();
 
+            //on crée une condition pour limiter les quantités entre 1 et 100 :
+            if(quantityModif[i].value >= 1 && quantityModif[i].value <= 100){
+
             //on select l'élément que l'on modifie :
             productInLocalStorage[i].quantity = parseInt(quantityModif[i].value);
 
             localStorage.setItem("product", JSON.stringify(productInLocalStorage));
             reloadTotal();
+
+            } else {
+                //on reprend la valeur du localStorage pour remettre la valeur précédente dans l'input si jamais les qtités entrées sont trop élevées ou basses
+                quantityModif[i].value = productInLocalStorage[i].quantity;
+                alert("Les quantités ne sont pas bonnes");
+            }
         })
     }
 }
 
-
-//Dans le cas a=où l'on supprime un article :
+//Dans le cas où l'on supprime un article :
 function deleteProduct(){
     let delitems = document.getElementsByClassName("deleteItem");
     for (let i=0; i < delitems.length; i++){ //on boucle sur tous les <p> "supprimer" de la classe deleteItem
@@ -195,9 +203,10 @@ orderButton.addEventListener("click", function(event){
 
     let flagVerif = true;
 
-    if(! contact.firstName.match(/^([a-zA-Z éèàçùêâûôëï-]+)$/)){
+    if(! contact.firstName.match(/^([a-zA-Z Ééèàçùêâûôëï'-]+)$/)){
         let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
         firstNameErrorMsg.innerText = "Le prénom est invalide, vérifiez votre saisi : pas de chiffre(s)";
+        //a chaque fois qu'il y a une erreur le flag passe à false
         flagVerif = false;
     } else{
         //le champs saisi est correct donc on ne met pas de message d'erreur
@@ -205,7 +214,7 @@ orderButton.addEventListener("click", function(event){
         firstNameErrorMsg.innerText = "";
     }
 
-    if(! contact.lastName.match(/^([a-zA-Z éèàçùêâûôëï-]+)$/)){
+    if(! contact.lastName.match(/^([a-zA-Z Ééèàçùêâûôëï'-]+)$/)){
         let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
         lastNameErrorMsg.innerText = "Le nom est invalide, vérifiez votre saisi : pas de chiffre(s) !";
         flagVerif = false;
@@ -245,15 +254,16 @@ orderButton.addEventListener("click", function(event){
         emailErrorMsg.innerText = "";
     }
 
-
+//si aucune erreur n'a été détectée on valide la commande :
     if(flagVerif){
-        // on ajoute les infos manquantes du panier
+        //appel la fonction createPostProduct qui permet de mettre au bon format les données du local storage pour l'envoi à l'API (liste de string des id pdts)
         products = createPostProduct()
         const sendFormData = {
             contact,
             products,
         }
 
+        //création format JSON + option de l'envoi en POST à l'API
         const options = {
             method: 'POST',
             body: JSON.stringify(sendFormData),
@@ -262,11 +272,12 @@ orderButton.addEventListener("click", function(event){
             }
         };
 
+        //envoi à l'API selon les options
         fetch("http://localhost:3000/api/products/order", options)
         .then(function (res) {
             return res.json()
         })
-
+        //recup des données au format JSON, redirection de la page vers la page "confirmation" + order ID que l'on a récupéré grâce à l'envoi du POST
         .then(function(data){
             document.location.href = 'confirmation.html?id='+ data.orderId;
         });
@@ -283,4 +294,3 @@ function createPostProduct(){
     }
     return data
 }
-

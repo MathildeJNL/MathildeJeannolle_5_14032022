@@ -1,33 +1,14 @@
+//on récupère l'ID de l'URL
 function checkout(){
+    let params = (new URL(document.location)).searchParams; //recup paramètres de l'URL
+    let id = params.get('id'); //on recup le paramètre ID
+
+    //on met l'ID dans "orderId"
     const orderId = document.getElementById('orderId');
-    let params = (new URL(document.location)).searchParams;
-    //je récupère l'ID de l'URL :
-    let id = params.get('id');
     orderId.innerHTML = id;
+
+    //on supprime le local storage car on ne doit pas conserver le n°
     localStorage.clear();
 }
+
 checkout();
-
-// function send(e) {
-//     e.preventDefault();
-//     fetch("http://localhost:3000/api/products", {
-//       method: "POST",
-//       headers: {
-//         'Accept': 'application/json', 
-//         'Content-Type': 'application/json'
-//       },
-//       body: JSON.stringify({value: document.getElementById("value").value})
-//     })
-//     .then(function(res) {
-//       if (res.ok) {
-//         return res.json();
-//       }
-//     })
-//     .then(function(value) {
-//         document
-//           .getElementById("orderId")
-//           .innerText = value.postData.text;
-//     });
-//   }
-
-// document.getElementsByClassName("confirmation").addEventListener("click", send);
