@@ -4,32 +4,34 @@ let productInLocalStorage = JSON.parse(localStorage.getItem('product'));
 //on crée une première condition si le panier est vide :
 if (productInLocalStorage === null || productInLocalStorage === 0) {
     alert("votre panier est vide !");
+} else {
+    //Je fais appel à l'API qui contient la liste des produits
+    fetch("http://localhost:3000/api/products")
+
+        /* 1ère promesse .then = récupérer le résultat (res) de la requête au format JSON
+        avec une vérif préalable que la requête s'est bien passée */
+        .then(function (res) {
+            if (res.ok) {
+                return res.json();
+            }
+        })
+
+        // 2ème promesse si la première est tenue :
+        .then(function (value) {
+            showProducts(value);
+
+            //j'initialise les eventListener
+            modifQuantity();
+            deleteProduct();
+        })
+
+        //Si il y a une erreur au moment d'appeler le serveur, on renvoi :
+        .catch(function (err) {
+            alert("Une erreur est survenue... Le serveur ne répond pas");
+        });
 }
 
-//Je fais appel à l'API qui contient la liste des produits
-fetch("http://localhost:3000/api/products")
 
-    /* 1ère promesse .then = récupérer le résultat (res) de la requête au format JSON
-    avec une vérif préalable que la requête s'est bien passée */
-    .then(function (res) {
-        if (res.ok) {
-            return res.json();
-        }
-    })
-
-    // 2ème promesse si la première est tenue :
-    .then(function (value) {
-        showProducts(value);
-
-        //j'initialise les eventListener
-        modifQuantity();
-        deleteProduct();
-    })
-
-    //Si il y a une erreur au moment d'appeler le serveur, on renvoi :
-    .catch(function (err) {
-        alert("Une erreur est survenue... Le serveur ne répond pas")
-    });
 
 //-----------AFFICHAGE PRODUITS------------
 
@@ -42,13 +44,13 @@ function showProducts(value) {
     let totalPriceInCart = 0;
 
     //on boucle sur les pdts du local storage en 1er lieu
-    for (let product of productInLocalStorage){     
+    for (let product of productInLocalStorage) {
 
         //on boucle sur les articles de l'API en 2nd lieu
         for (article of value) {
 
             //on conditionne si les id sont identiques : produit = article car ils ont le même id
-            if(product.id === article._id){
+            if (product.id === article._id) {
 
                 //on ajoute à totalQuantity la valeur en qtité de product, cela permet de ne pas effacer la valeur existante
                 totalQuantityInCart += product.quantity;
@@ -98,13 +100,13 @@ function showProducts(value) {
 //------MODIFICATION PANIER-------
 
 //fonction permettant la MAJ du total qtité et du prix après modif
-function reloadTotal(){
+function reloadTotal() {
     let allCartItem = document.querySelectorAll(".cart__item");
     let totalQuantityInCart = 0; //on initialise à zéro
     let totalPriceInCart = 0; //on initialise à zéro
 
     //on boucle toutes les cartes
-    for (let cart of allCartItem){
+    for (let cart of allCartItem) {
         let description_node = cart.getElementsByClassName("cart__item__content__description")[0]; //on sélectionne un noeud dans la carte
 
         let quantity = cart.getElementsByClassName("itemQuantity")[0].value; //on recupère la qtité de la carte
@@ -129,19 +131,19 @@ function reloadTotal(){
 }
 
 //Modification des quantités :
-function modifQuantity(){
+function modifQuantity() {
     let quantityModif = document.getElementsByClassName("itemQuantity");
 
     //on boucle sur les input itemQuantity et on crée une fonction qui écoute le changement en ajoutant un eventlistener "change" suite à une modification des quantités :
     //i = index et quantityModif = tableau
-    for (let i=0; i < quantityModif.length; i++){
-        quantityModif[i].addEventListener("change", function(event){
+    for (let i = 0; i < quantityModif.length; i++) {
+        quantityModif[i].addEventListener("change", function (event) {
 
             //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au moment de la modification
             event.preventDefault();
 
             //on crée une condition pour limiter les quantités entre 1 et 100 :
-            if(quantityModif[i].value >= 1 && quantityModif[i].value <= 100){
+            if (quantityModif[i].value >= 1 && quantityModif[i].value <= 100) {
 
                 //on select l'élément que l'on modifie :
                 productInLocalStorage[i].quantity = parseInt(quantityModif[i].value);
@@ -159,10 +161,10 @@ function modifQuantity(){
 }
 
 //Dans le cas où l'on supprime un article :
-function deleteProduct(){
+function deleteProduct() {
     let delitems = document.getElementsByClassName("deleteItem");
-    for (let i=0; i < delitems.length; i++){ //on boucle sur tous les <p> "supprimer" de la classe deleteItem
-        delitems[i].addEventListener("click", function(event){ //on ajoute un eventListener au moment du clic sur le <p> supprimer
+    for (let i = 0; i < delitems.length; i++) { //on boucle sur tous les <p> "supprimer" de la classe deleteItem
+        delitems[i].addEventListener("click", function (event) { //on ajoute un eventListener au moment du clic sur le <p> supprimer
 
             //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au moment de la modification
             event.preventDefault();
@@ -170,15 +172,15 @@ function deleteProduct(){
             //on crée un nouveau tableau
             let newLocalStorage = [];
             //on boucle sur l'index "j" des prdts dans le localStorage
-            for(let j in productInLocalStorage){
+            for (let j in productInLocalStorage) {
                 //on conditionnne : si l'index (j) est différent de l'index (i) on l'ajoute au newlocalStorage
-                if(j != i){
+                if (j != i) {
                     newLocalStorage.push(productInLocalStorage[j]);
                 }
             }
             //on réassigne la valeur
             productInLocalStorage = newLocalStorage;
-            
+
             //on modifie le localStorage avec l'article supprimé
             localStorage.setItem("product", JSON.stringify(productInLocalStorage));
             alert("Votre article a été supprimé !");
@@ -192,78 +194,78 @@ function deleteProduct(){
 //Validation du formulaire avec utilisation des Regex:
 let orderButton = document.getElementById("order");
 
-orderButton.addEventListener("click", function(event){
+orderButton.addEventListener("click", function (event) {
 
     event.preventDefault();
     //on formate le formulaire de contact pour l'envoi à l'API :
     const contact = {
-        firstName : document.getElementById('firstName').value,
-        lastName : document.getElementById('lastName').value,
-        address : document.getElementById('address').value,
-        city : document.getElementById('city').value,
-        email : document.getElementById('email').value 
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        email: document.getElementById('email').value
     }
 
     let flagVerif = true;
 
     //utilisation des regex
 
-    if(! contact.firstName.match(/^([a-zA-ZÉéèàçùêâûôëï'-]+)$/)){
+    if (!contact.firstName.match(/^([a-zA-ZÉéèàçùêâûôëï'-]+)$/)) {
         let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
         firstNameErrorMsg.innerText = "Le prénom est invalide, vérifiez votre saisi : pas de chiffre(s)";
         //a chaque fois qu'il y a une erreur le flag passe à false
         flagVerif = false;
-    } else{
+    } else {
         //le champs saisi est correct donc on ne met pas de message d'erreur
         let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
         firstNameErrorMsg.innerText = "";
     }
 
-    if(! contact.lastName.match(/^([a-zA-ZÉéèàçùêâûôëï'-]+)$/)){
+    if (!contact.lastName.match(/^([a-zA-ZÉéèàçùêâûôëï'-]+)$/)) {
         let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
         lastNameErrorMsg.innerText = "Le nom est invalide, vérifiez votre saisi : pas de chiffre(s) !";
         flagVerif = false;
-    } else{
+    } else {
         //le champs saisi est correct donc on ne met pas de message d'erreur
         let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
         lastNameErrorMsg.innerText = "";
     }
 
-    if(! contact.address.match(/^([0-9]{1,5}[a-z A-Z0-9_.,éèàçùêâûôëï]+)$/)){
+    if (!contact.address.match(/^([0-9]{1,5}[a-z A-Z0-9_.,éèàçùêâûôëï]+)$/)) {
         let addressErrorMsg = document.getElementById('addressErrorMsg');
         addressErrorMsg.innerText = "L\'adresse est invalide";
         flagVerif = false;
-    } else{
+    } else {
         //le champs saisi est correct donc on ne met pas de message d'erreur
         let addressErrorMsg = document.getElementById('addressErrorMsg');
         addressErrorMsg.innerText = "";
     }
 
-    if(! contact.city.match(/^([0-9]{1,5}[a-z A-Z_.,éèàçùêâûôëï-]{1,60})$/)){
+    if (!contact.city.match(/^([0-9]{1,5}[a-z A-Z_.,éèàçùêâûôëï-]{1,60})$/)) {
         let cityErrorMsg = document.getElementById('cityErrorMsg');
         cityErrorMsg.innerText = "La ville n\'est pas valide, pensez à inscrire le code postal";
         flagVerif = false;
-    } else{
+    } else {
         //le champs saisi est correct donc on ne met pas de message d'erreur
         let cityErrorMsg = document.getElementById('cityErrorMsg');
         cityErrorMsg.innerText = "";
     }
 
-    if(! contact.email.match(/^[a-zA-Z0-9-_.]+[@]{1}[a-zA-Z]+[.]{1}[a-z]{2,3}$/)){
+    if (!contact.email.match(/^[a-zA-Z0-9-_.]+[@]{1}[a-zA-Z]+[.]{1}[a-z]{2,3}$/)) {
         let emailErrorMsg = document.getElementById('emailErrorMsg');
         emailErrorMsg.innerText = "Vérifiez que votre adresse email est écrite convenablement";
         flagVerif = false;
-    } else{
+    } else {
         //le champs saisi est correct donc on ne met pas de message d'erreur
         let emailErrorMsg = document.getElementById('emailErrorMsg');
         emailErrorMsg.innerText = "";
     }
 
-//si aucune erreur n'a été détectée on valide la commande :
-    if(flagVerif){
+    //si aucune erreur n'a été détectée on valide la commande :
+    if (flagVerif) {
         //appel la fonction createPostProduct qui permet de mettre au bon format les données du local storage pour l'envoi à l'API (liste de string des id pdts)
         products = createPostProduct() //fonction crée en l.294
-        
+
         //on formate les données contact & produits pour l'envoi à l'API
         const sendFormData = {
             contact,
@@ -274,29 +276,29 @@ orderButton.addEventListener("click", function(event){
         const options = {
             method: 'POST',
             body: JSON.stringify(sendFormData),
-            headers: { 
-              'Content-Type': 'application/json',
+            headers: {
+                'Content-Type': 'application/json',
             }
         };
 
         //envoi à l'API selon les options
         fetch("http://localhost:3000/api/products/order", options)
-        .then(function (res) {
-            return res.json()
-        })
-        //recup des données au format JSON, redirection de la page vers la page "confirmation" + order ID que l'on a récupéré grâce à l'envoi du POST
-        .then(function(data){
-            document.location.href = 'confirmation.html?id='+ data.orderId;
-        });
+            .then(function (res) {
+                return res.json()
+            })
+            //recup des données au format JSON, redirection de la page vers la page "confirmation" + order ID que l'on a récupéré grâce à l'envoi du POST
+            .then(function (data) {
+                document.location.href = 'confirmation.html?id=' + data.orderId;
+            });
 
     }
 });
 
 // cette fonction permet de mettre au format attendu les différents produits pour l'envoyer a l'API (POST)
-function createPostProduct(){
-    data=[]
+function createPostProduct() {
+    data = []
     //boucle sur tous les pdts du local storage
-    for(product of productInLocalStorage){
+    for (product of productInLocalStorage) {
         // on récupère que l'ID car l'API attend uniquement une liste de string des ID produits
         data.push(product.id)
     }

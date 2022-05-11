@@ -35,7 +35,9 @@ fetch("http://localhost:3000/api/products/" + id)
     //on ajoute des attributs à l'élément (la balise html donc)
     imageElement.setAttribute("src", value.imageUrl);
     imageElement.setAttribute("alt", value.altTxt);
-    image[0].appendChild(imageElement);
+    image[0].appendChild(imageElement); //on ajoute l'élément à la 1ère class image
+
+    //-----TITRE PRIX DESCRITPTION------
 
     //on ajoute le titre, le prix et la description dans les éléments HTML correspondant
     title.textContent = value.name;
