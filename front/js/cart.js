@@ -1,6 +1,5 @@
-//On souhaite afficher les produits du panier :
+//On récupère les données du local storage (le panier) :
 let productInLocalStorage = JSON.parse(localStorage.getItem('product'));
-console.log(productInLocalStorage);
 
 //on crée une première condition si le panier est vide :
 if (productInLocalStorage === null || productInLocalStorage === 0) {
@@ -21,6 +20,8 @@ fetch("http://localhost:3000/api/products")
     // 2ème promesse si la première est tenue :
     .then(function (value) {
         showProducts(value);
+
+        //j'initialise les eventListener
         modifQuantity();
         deleteProduct();
     })
@@ -30,9 +31,9 @@ fetch("http://localhost:3000/api/products")
         alert("Une erreur est survenue... Le serveur ne répond pas")
     });
 
-//AFFICHAGE PRODUITS
-//il faut boucler : pour comparer le panier et les données de l'API (2boucles = 1 dans 1)
+//-----------AFFICHAGE PRODUITS------------
 
+//il faut boucler : pour comparer le panier et les données de l'API :
 function showProducts(value) {
 
     //on veut stocker la somme totale des quantités des pdts du local Storage
@@ -40,7 +41,6 @@ function showProducts(value) {
     let totalQuantityInCart = 0;
     let totalPriceInCart = 0;
 
-    
     //on boucle sur les pdts du local storage en 1er lieu
     for (let product of productInLocalStorage){     
 
@@ -95,13 +95,13 @@ function showProducts(value) {
     `
 }
 
-//Dans le cas où l'on modifie le panier :
-//fonction permettant la MAJ du total qtité et du prix après modif
+//------MODIFICATION PANIER-------
 
+//fonction permettant la MAJ du total qtité et du prix après modif
 function reloadTotal(){
     let allCartItem = document.querySelectorAll(".cart__item");
     let totalQuantityInCart = 0; //on initialise à zéro
-    let totalPriceInCart = 0;
+    let totalPriceInCart = 0; //on initialise à zéro
 
     //on boucle toutes les cartes
     for (let cart of allCartItem){
@@ -113,6 +113,7 @@ function reloadTotal(){
         quantity = parseInt(quantity);
         price = parseInt(price);
 
+        //calcul de la quantité et prix total après la modification :
         totalQuantityInCart += quantity;
         totalPriceInCart += price * quantity;
 
@@ -127,8 +128,9 @@ function reloadTotal(){
     `
 }
 
+//Modification des quantités :
 function modifQuantity(){
-    let quantityModif = document.querySelectorAll(".itemQuantity");
+    let quantityModif = document.getElementsByClassName("itemQuantity");
 
     //on boucle sur les input itemQuantity et on crée une fonction qui écoute le changement en ajoutant un eventlistener "change" suite à une modification des quantités :
     //i = index et quantityModif = tableau
@@ -141,11 +143,11 @@ function modifQuantity(){
             //on crée une condition pour limiter les quantités entre 1 et 100 :
             if(quantityModif[i].value >= 1 && quantityModif[i].value <= 100){
 
-            //on select l'élément que l'on modifie :
-            productInLocalStorage[i].quantity = parseInt(quantityModif[i].value);
+                //on select l'élément que l'on modifie :
+                productInLocalStorage[i].quantity = parseInt(quantityModif[i].value);
 
-            localStorage.setItem("product", JSON.stringify(productInLocalStorage));
-            reloadTotal();
+                localStorage.setItem("product", JSON.stringify(productInLocalStorage));
+                reloadTotal();
 
             } else {
                 //on reprend la valeur du localStorage pour remettre la valeur précédente dans l'input si jamais les qtités entrées sont trop élevées ou basses
@@ -193,6 +195,7 @@ let orderButton = document.getElementById("order");
 orderButton.addEventListener("click", function(event){
 
     event.preventDefault();
+    //on formate le formulaire de contact pour l'envoi à l'API :
     const contact = {
         firstName : document.getElementById('firstName').value,
         lastName : document.getElementById('lastName').value,
@@ -203,7 +206,9 @@ orderButton.addEventListener("click", function(event){
 
     let flagVerif = true;
 
-    if(! contact.firstName.match(/^([a-zA-Z Ééèàçùêâûôëï'-]+)$/)){
+    //utilisation des regex
+
+    if(! contact.firstName.match(/^([a-zA-ZÉéèàçùêâûôëï'-]+)$/)){
         let firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
         firstNameErrorMsg.innerText = "Le prénom est invalide, vérifiez votre saisi : pas de chiffre(s)";
         //a chaque fois qu'il y a une erreur le flag passe à false
@@ -214,7 +219,7 @@ orderButton.addEventListener("click", function(event){
         firstNameErrorMsg.innerText = "";
     }
 
-    if(! contact.lastName.match(/^([a-zA-Z Ééèàçùêâûôëï'-]+)$/)){
+    if(! contact.lastName.match(/^([a-zA-ZÉéèàçùêâûôëï'-]+)$/)){
         let lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
         lastNameErrorMsg.innerText = "Le nom est invalide, vérifiez votre saisi : pas de chiffre(s) !";
         flagVerif = false;
@@ -257,13 +262,15 @@ orderButton.addEventListener("click", function(event){
 //si aucune erreur n'a été détectée on valide la commande :
     if(flagVerif){
         //appel la fonction createPostProduct qui permet de mettre au bon format les données du local storage pour l'envoi à l'API (liste de string des id pdts)
-        products = createPostProduct()
+        products = createPostProduct() //fonction crée en l.294
+        
+        //on formate les données contact & produits pour l'envoi à l'API
         const sendFormData = {
             contact,
             products,
         }
 
-        //création format JSON + option de l'envoi en POST à l'API
+        //création d'options de l'envoie à l'API avec la méthode (POST) + les données sendFormData au format JSON + le header content-type
         const options = {
             method: 'POST',
             body: JSON.stringify(sendFormData),
@@ -288,9 +295,11 @@ orderButton.addEventListener("click", function(event){
 // cette fonction permet de mettre au format attendu les différents produits pour l'envoyer a l'API (POST)
 function createPostProduct(){
     data=[]
+    //boucle sur tous les pdts du local storage
     for(product of productInLocalStorage){
         // on récupère que l'ID car l'API attend uniquement une liste de string des ID produits
         data.push(product.id)
     }
+
     return data
 }

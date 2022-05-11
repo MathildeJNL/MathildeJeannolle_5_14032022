@@ -35,30 +35,3 @@ function showProducts(value){
       `
     }
 }
-
-
-//   <a href="./product.html?id=42">
-//   <article>
-//     <img src=".../product01.jpg" alt="Lorem ipsum dolor sit amet, Kanap name1">
-//     <h3 class="productName">Kanap name1</h3>
-//     <p class="productDescription">Dis enim malesuada risus sapien gravida nulla nisl arcu. Dis enim malesuada risus sapien gravida nulla nisl arcu.</p>
-//   </article>
-// </a>
-
-
-/*
-  .then(function(value) {
-    for (let i in value){ 
-      let altTexte = value[i].altTxt;
-      let colors = value[i].colors;
-      let descriptionArticle = value[i].description;
-      let imageArticle = value[i].imageUrl;
-      let nameArticle = value[i].name;
-      let priceArticle = value[i].price;
-      let idArticle = value[i]._id;
-
-      console.log(value[i]);
-      document.getElementById("items").innerHTML +=
-       '<a>' + nameArticle + '</a>';
-    }
-  })*/

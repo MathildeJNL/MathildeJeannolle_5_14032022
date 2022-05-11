@@ -1,4 +1,3 @@
-
 //je crée une nouvelle url à partir de l'url actuelle en ajoutant searchParams pour manipuler les paramètres de requête d'URL :
 let params = (new URL(document.location)).searchParams;
 
@@ -27,12 +26,6 @@ fetch("http://localhost:3000/api/products/" + id)
 
   // 2ème promesse si la première est tenue :
   .then(function (value) {
-    //créer un nvl élément paragraphe et l'ajoute à la fin de l'élément ID price :
-    // let p = document.createElement("div");
-    // p.innerHTML = value.price;
-    // price.appendChild(p);
-    console.log(value);
-
 
     //--------AFFICHER LES IMAGES---------
 
@@ -44,6 +37,7 @@ fetch("http://localhost:3000/api/products/" + id)
     imageElement.setAttribute("alt", value.altTxt);
     image[0].appendChild(imageElement);
 
+    //on ajoute le titre, le prix et la description dans les éléments HTML correspondant
     title.textContent = value.name;
     price.textContent = value.price;
     description.textContent = value.description;
@@ -53,7 +47,7 @@ fetch("http://localhost:3000/api/products/" + id)
 
     //on boucle les couleurs
     for (color of value.colors) {
-      let colorsElement = createOption(color);
+      let colorsElement = createOption(color); //fonction crée en l.65
       colors.appendChild(colorsElement);
     }
 
@@ -90,7 +84,7 @@ const selectColors = document.getElementById('colors');
 //on récupère l'élément sur lequel on veut détecter le clic :
 const addToCart = document.getElementById("addToCart");
 
-//On écoute l'événement clic, event sera prit en compte :
+//On écoute l'événement click de l'element addToCart :
 addToCart.addEventListener('click', function (event) {
 
   //on utilise la fonction preventDefault de l'objet event pour empêcher le comportement par défaut de cet élément au clic de la souris
@@ -119,7 +113,7 @@ addToCart.addEventListener('click', function (event) {
   let miseAJour = false; //drapeau-flag
   let addProduct = true;
   
-  //On va créer une alerte contenant une condition pour une selection couleur
+  //On va créer une alerte contenant une condition qui indique qu'un choix de couleur doit se faire
   if (!selectColors.value) {
     alert("Veuillez sélectionner une couleur");
 
@@ -138,8 +132,7 @@ addToCart.addEventListener('click', function (event) {
       if(product.quantity + dataLocalStorage.quantity <=100){
         
         miseAJour = true;
-          //chips.qtité ondulation = chips.qtité ondulation + ondulation que je veux en plus sur ma chips
-          // product.quantity = parseInt(product.quantity) + parseInt(dataLocalStorage.quantity);
+
           product.quantity = product.quantity + dataLocalStorage.quantity;
 
           alert("Panier mis à jour !")
@@ -150,7 +143,6 @@ addToCart.addEventListener('click', function (event) {
 
         alert("Les quantités sont supérieures à celles autorisées");
       }
-
       }
     }
 
@@ -164,8 +156,7 @@ addToCart.addEventListener('click', function (event) {
       alert("Article ajouté au panier avec succès !");
     }
 
-
-    //stock les données récupérées dans le localStorage + convertir le JSON en chaine de caractères :
+    //on met le panier (avec le nouveau produit) dans le local storage + convertir le JSON en chaine de caractères :
     localStorage.setItem('product', JSON.stringify(panier));
   }
 });
